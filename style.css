@@ -707,10 +707,20 @@ footer {
     min-height: 70px;
   }
 
-  .brand img {
-    width: 105px;
-    height: 50px;
-  }
+  .brand {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.brand img {
+  display: block;
+  width: 140px;
+  height: 65px;
+  object-fit: contain;
+  border-radius: 0;
+  background: #fff;
+}
 
   .menu-toggle {
     display: block;
