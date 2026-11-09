@@ -1,65 +1,52 @@
-const menuToggle = document.querySelector(".menu-toggle");
-const nav = document.querySelector(".nav");
-
-menuToggle.addEventListener("click", () => {
-  const isOpen = nav.classList.toggle("open");
-  menuToggle.setAttribute("aria-expanded", isOpen);
-  menuToggle.textContent = isOpen ? "×" : "☰";
-});
-
-document.querySelectorAll(".nav a").forEach(link => {
-  link.addEventListener("click", () => {
-    nav.classList.remove("open");
-    menuToggle.setAttribute("aria-expanded", "false");
-    menuToggle.textContent = "☰";
-  });
-});
-
-const dateInput = document.getElementById("date");
-const today = new Date();
-const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
-  .toISOString()
-  .split("T")[0];
-dateInput.min = localToday;
-
-document.getElementById("year").textContent = new Date().getFullYear();
-
-document.getElementById("bookingForm").addEventListener("submit", function (event) {
-  event.preventDefault();
-
-  const name = document.getElementById("name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const service = document.getElementById("service").value;
-  const date = document.getElementById("date").value;
-  const time = document.getElementById("time").value;
-  const note = document.getElementById("note").value.trim();
-
-  if (!name || !phone || !service || !date || !time) {
-    alert("Please complete all required booking fields.");
-    return;
+(() => {
+  const menuButton = document.querySelector('.menu-toggle');
+  const nav = document.querySelector('.nav-links');
+  if (menuButton && nav) {
+    menuButton.addEventListener('click', () => {
+      const open = nav.classList.toggle('open');
+      menuButton.setAttribute('aria-expanded', String(open));
+      menuButton.textContent = open ? '×' : '☰';
+    });
+    nav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+      nav.classList.remove('open'); menuButton.setAttribute('aria-expanded', 'false'); menuButton.textContent = '☰';
+    }));
   }
-
-  const formattedDate = new Date(`${date}T12:00:00`).toLocaleDateString("en-NG", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric"
+  const dateField = document.getElementById('booking-date');
+  if (dateField) {
+    const today = new Date();
+    const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    dateField.min = localToday;
+  }
+  document.querySelectorAll('[data-service]').forEach(link => link.addEventListener('click', () => {
+    const select = document.getElementById('service');
+    if (select) {
+      const wanted = link.dataset.service;
+      const match = [...select.options].find(option => option.text.toLowerCase().includes(wanted.toLowerCase()));
+      if (match) select.value = match.value;
+    }
+  }));
+  const form = document.getElementById('booking-form');
+  if (form) form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const data = new FormData(form);
+    const message = [
+      'Hello Yimas Beauty Empire! I would like to request an appointment.',
+      '',
+      `Name: ${data.get('name')}`,
+      `Phone: ${data.get('phone')}`,
+      `Service: ${data.get('service')}`,
+      `Preferred date: ${data.get('date')}`,
+      `Preferred time: ${data.get('time')}`,
+      data.get('notes') ? `Style details: ${data.get('notes')}` : '',
+      '',
+      'I understand this is a request and the appointment is not confirmed until your team replies. Please share availability and deposit instructions.'
+    ].filter(Boolean).join('\n');
+    const url = `https://wa.me/2347038724293?text=${encodeURIComponent(message)}`;
+    const status = document.getElementById('form-status');
+    if (status) status.textContent = 'Opening WhatsApp with your booking details. Please press Send in WhatsApp to submit your request.';
+    window.open(url, '_blank', 'noopener,noreferrer');
   });
-
-  const message = [
-    "Hello Yimasbeauty Empire, I would like to request an appointment.",
-    "",
-    `Name: ${name}`,
-    `Phone/WhatsApp: ${phone}`,
-    `Service: ${service}`,
-    `Preferred date: ${formattedDate}`,
-    `Preferred time: ${time}`,
-    `Additional note: ${note || "None"}`,
-    "",
-    "I understand that the appointment is subject to confirmation and the required deposit."
-  ].join("\n");
-
-  const whatsappNumber = "2347038724293";
-  const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-  window.open(url, "_blank", "noopener");
-});
+  const year = document.getElementById('year');
+  if (year) year.textContent = new Date().getFullYear();
+})();
